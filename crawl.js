@@ -28,7 +28,63 @@ function getURLsFromHTML(htmlBody, baseURL) {
   }
 }
 
+async function crawlPage(baseURL, currentURL, pages) {
+  try {
+    const { hostname: baseHost } = new URL(baseURL);
+    const { hostname: currentHost } = new URL(currentURL);
+
+    if (baseHost !== currentHost) {
+      return pages
+    }
+
+    const normalizedCurrentURL = normalizeURL(currentURL)
+
+    if (normalizedCurrentURL in pages) {
+      pages[normalizedCurrentURL]++;
+      return pages
+    }
+
+    pages[normalizedCurrentURL] = 1
+
+    const htmlBody = await fetchAndParse(currentURL)
+    const urls = getURLsFromHTML(htmlBody, baseURL)
+
+    for (const url of urls) {
+      await crawlPage(baseURL, url, pages)
+    }
+
+    return pages
+
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+async function fetchAndParse(url) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`)
+    }
+
+    const contentType = response.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("text/html")) {
+      throw new Error(`${url} - invalid content type: expected text/html`)
+    }
+
+    const htmlBody = await response.text();
+
+    return htmlBody;
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+
 export {
   normalizeURL,
-  getURLsFromHTML
+  getURLsFromHTML,
+  crawlPage
 };
