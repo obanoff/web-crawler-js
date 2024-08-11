@@ -56,7 +56,7 @@ async function crawlPage(baseURL, currentURL, pages) {
     return pages
 
   } catch (err) {
-    console.error(err.message);
+    throw err
   }
 }
 
@@ -71,14 +71,14 @@ async function fetchAndParse(url) {
     const contentType = response.headers.get("content-type");
 
     if (!contentType || !contentType.includes("text/html")) {
-      throw new Error(`${url} - invalid content type: expected text/html`)
+      console.warn(`${url} - invalid content type: expected text/html`)
     }
 
     const htmlBody = await response.text();
 
     return htmlBody;
   } catch (err) {
-    console.error(err.message);
+    throw err
   }
 }
 

@@ -1,6 +1,7 @@
 import { normalizeURL, crawlPage } from "./crawl.js";
+import { printReport } from "./report.js";
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
 
   if (args.length !== 1) {
@@ -13,15 +14,13 @@ function main() {
 
     console.log(` *** Crawler is starting at ${url} *** `);
 
-    crawlPage(url, url, {}).then(pages => {
-      console.log(pages)
-    });
+    const pages = await crawlPage(url, url, {})
+
+    printReport(pages)
 
   } catch (err) {
     console.error(err.message);
   }
 }
 
-
-
-main();
+await main();
